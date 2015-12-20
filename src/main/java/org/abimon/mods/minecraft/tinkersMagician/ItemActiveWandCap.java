@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
+import tconstruct.library.util.IToolPart;
 import thaumcraft.api.wands.WandCap;
 
 public class ItemActiveWandCap extends Item{
@@ -43,5 +44,6 @@ public class ItemActiveWandCap extends Item{
     		th.printStackTrace();
     	}
     	System.out.println(itemIcon);
+    	
     }
 }

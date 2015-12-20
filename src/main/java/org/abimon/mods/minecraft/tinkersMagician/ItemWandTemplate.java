@@ -18,16 +18,22 @@ public class ItemWandTemplate extends ToolCore {
 	@Override
 	public String getIconSuffix(int partType) {
 		switch(partType){
-		case 0:
+		case 3:
 			return "_cap_rear";
 		case 2:
 			return "_wand_rod";
-		case 3:
+		case 0:
 			return "_cap_head";
 		default:
 			return "";
 		}
 	}
+	
+    @Override
+    public String getModifyType ()
+    {
+        return "Wand";
+    }
 
 	@Override
 	public String getEffectSuffix() {
@@ -59,6 +65,16 @@ public class ItemWandTemplate extends ToolCore {
 	public String[] getTraits() {
 		return new String[]{"wand"};
 	}
+	
+    public int durabilityTypeHandle ()
+    {
+        return 2;
+    }
+    
+    public float getDurabilityModifier ()
+    {
+        return 1f;
+    }
 
 	public ItemStack onItemRightClick(ItemStack item, World p_77659_2_, EntityPlayer p_77659_3_)
 	{
