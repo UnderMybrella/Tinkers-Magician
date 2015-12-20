@@ -1,0 +1,16 @@
+[
+{
+  "modid": "tinkersmagician",
+  "name": "Tinkers' Magician",
+  "description": "Magical Tinkering. Two sides of the same coin. Sort of.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["UnderMybrella"],
+  "credits": "The Tinkers' Construct team & Azanor, for creating the mods required for this.",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
