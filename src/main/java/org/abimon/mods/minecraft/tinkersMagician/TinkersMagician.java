@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -36,6 +37,10 @@ import thaumcraft.api.ItemApi;
 import thaumcraft.api.ThaumcraftApi;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
+import thaumcraft.api.crafting.CrucibleRecipe;
+import thaumcraft.api.research.ResearchCategories;
+import thaumcraft.api.research.ResearchItem;
+import thaumcraft.api.research.ResearchPage;
 import thaumcraft.api.wands.WandCap;
 import thaumcraft.api.wands.WandRod;
 import thaumcraft.client.renderers.item.ItemWandRenderer;
@@ -62,8 +67,6 @@ import java.util.zip.ZipInputStream;
 
 import javax.imageio.ImageIO;
 
-import org.abimon.jscout.jScout;
-
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -72,7 +75,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 
 import static net.minecraft.util.EnumChatFormatting.*;
 
-@Mod(modid = TinkersMagician.MODID, version = TinkersMagician.VERSION)
+@Mod(modid = TinkersMagician.MODID, version = TinkersMagician.VERSION, dependencies = "required-after:TConstruct; required-after:Thaumcraft")
 public class TinkersMagician
 {
 	public static final String MODID = "tinkersmagician";
@@ -80,30 +83,32 @@ public class TinkersMagician
 
 	public static Item capsPattern = new ItemCapsPattern().setUnlocalizedName(MODID + ":pattern").setTextureName(MODID + ":pattern_caps");
 	public static Item inertCap = new DynamicToolPart("_cap", "ToolCaps", MODID);
-	public static Item cap = new ItemActiveWandCap();
 	public static ItemWandTemplate wandTemplate = new ItemWandTemplate();
 	public static Item wand = new ItemWand();
 
 	public static final WandRecipe wandRecipe = new WandRecipe();
 
 	public static final String AVERAGE_CONSUMPTION_KEY = "AverageConsumptionDecrease";
-	
+
 	public static Map<String, Integer> materialCapIDs = new HashMap<String, Integer>();
 	public static Map<String, Integer> materialRodIDs = new HashMap<String, Integer>();
 
 	public static final int CAP_MATERIAL = 16384;
 	public static final int ROD_MATERIAL = 17385;
-
+	
+	public static final String CATEGORY_STRING = MODID + ":tinkersCategory";
+	public static final String TINKERS_RESEARCH_STRING = MODID + ":tinkersResearch";
+	
+	public static ResearchItem tinkersResearch;
+	
 	@EventHandler
 	public void postinit(FMLPostInitializationEvent event)
 	{
-		//jScout.scout(new File("/Users/undermybrella/Thaumcraft.jar"));
 
 		MinecraftForge.EVENT_BUS.register(this);
 
 		GameRegistry.registerItem(capsPattern, "capsPattern");
 		GameRegistry.registerItem(inertCap, "inertCap");
-		GameRegistry.registerItem(cap, "cap");
 		GameRegistry.registerItem(wand, "wand");
 		GameRegistry.registerItem(wandTemplate, "wandTemplate");
 		PatternBuilder.instance.addToolPattern((IPattern) capsPattern);
@@ -124,34 +129,34 @@ public class TinkersMagician
 		ModifyBuilder.registerModifier(new ModExtraModifiers(new ItemStack[]{new ItemStack(ConfigBlocks.blockCosmeticSolid, 1, 4), new ItemStack(ConfigItems.itemResource, 1, 7)}, new String[]{"Wand"}, -1, "ExtraModifiers"));
 
 		addPattern();
-		
+
 		int i = 0;
 		for(WandCap cap : WandCap.caps.values()){
 			materialCapIDs.put(cap.getTag(), CAP_MATERIAL + (i++));
-			TConstructRegistry.addtoolMaterial(materialCapIDs.get(cap.getTag()), new ToolMaterial((cap.getTag().charAt(0) + "").toUpperCase() + cap.getTag().substring(1).toLowerCase(), (cap.getTag().charAt(0) + "").toUpperCase() + cap.getTag().substring(1).toLowerCase(), (int) ((cap.getBaseCostModifier() - 1.0f) * 10), 0, 0, 0, 1.0f, 0, 0.0f, "§a", getColorFromLocation(true,cap.getItem(), cap.getTexture())));
+			TConstructRegistry.addtoolMaterial(materialCapIDs.get(cap.getTag()), new ToolMaterial((cap.getTag().charAt(0) + "").toUpperCase() + cap.getTag().substring(1).toLowerCase(), (cap.getTag().charAt(0) + "").toUpperCase() + cap.getTag().substring(1).toLowerCase(), (int) ((1.2 - cap.getBaseCostModifier()) * 10), 0, (int) ((1.2 - cap.getBaseCostModifier()) * 20), 0, 1.0f, 0, 0.0f, "§a", getColorFromLocation(true,cap.getItem(), cap.getTexture())));
+		}
+
+		i = 0;
+		for(WandRod rod : WandRod.rods.values()){
+			materialRodIDs.put(rod.getTag(), ROD_MATERIAL + (i++));
+			TConstructRegistry.addtoolMaterial(materialRodIDs.get(rod.getTag()), new ToolMaterial((rod.getTag().charAt(0) + "").toUpperCase() + rod.getTag().substring(1).toLowerCase(), (rod.getTag().charAt(0) + "").toUpperCase() + rod.getTag().substring(1).toLowerCase(), 0, rod.getCapacity() * 100 / 8, 0, 0, 1.0f, 0, 0.0f, "§a", getColorFromLocation(false,rod.getItem(), rod.getTexture())));
 		}
 		
-		i = 0;
-		for(WandRod rod : WandRod.rods.values())
-			materialRodIDs.put(rod.getTag(), ROD_MATERIAL + (i++));
-
-		//		TConstructRegistry.addToolMaterial(MaterialID.Thaumium + 1, "Void Metal", 6, 800, 1400, 4, 2.6F, 0, 0f, "\u00A75", 0x321153);
-		//		PatternBuilder.instance.registerFullMaterial(new ItemStack((Item) ItemHelper.getStaticItem("itemResource", "thaumcraft.common.config.ConfigItems"), 1, 16), 2, "Void Metal", new ItemStack(TinkerTools.toolShard, 1, 32), new ItemStack(TinkerTools.toolRod, 1, 32), 32);
-		//		for (int meta = 0; meta < TinkerTools.patternOutputs.length; meta++)
-		//		{
-		//			if (TinkerTools.patternOutputs[meta] != null)
-		//				TConstructRegistry.addPartMapping(TinkerTools.woodPattern, meta + 1, 32, new ItemStack(TinkerTools.patternOutputs[meta], 1, 32));
-		//		}
-		//
-		//		TConstructRegistry.addDefaultToolPartMaterial(MaterialID.Thaumium + 1);
-		//		TConstructRegistry.addDefaultShardMaterial(MaterialID.Thaumium + 1);
+		CrucibleRecipe patternRecipe = new CrucibleRecipe(TINKERS_RESEARCH_STRING,new ItemStack(capsPattern), new ItemStack(TinkerTools.blankPattern), new AspectList().add(Aspect.MAGIC, 8));
+		ThaumcraftApi.getCraftingRecipes().add(patternRecipe);//
+		ItemStack itm = ToolBuilder.instance.buildTool(new ItemStack(inertCap), new ItemStack(TinkerTools.toolRod), new ItemStack(inertCap), "");
+		//InfusionToolRecipes toolRecipe = new InfusionToolRecipes(TINKERS_RESEARCH_STRING, itm, 1, new AspectList().add(Aspect.MAGIC, 8), new ItemStack(ConfigItems.itemResource, 1, 4), new ItemStack[]{new ItemStack(inertCap), new ItemStack(TinkerTools.toolRod), new ItemStack(inertCap)});
+		//ThaumcraftApi.getCraftingRecipes().add(toolRecipe);
+		
+		ResearchCategories.registerCategory(CATEGORY_STRING, new ResourceLocation("thaumcraft", "textures/items/alumentum.png"), new ResourceLocation("thaumcraft", "textures/gui/gui_researchback.png"));
+		tinkersResearch = new ResearchItem(TINKERS_RESEARCH_STRING, CATEGORY_STRING, new AspectList().add(Aspect.TOOL, 4).add(Aspect.MAGIC, 4).add(Aspect.EXCHANGE, 4), 0, 0, 1, new ItemStack(Items.diamond_sword)).setParents("ROD_greatwood").setPages(new ResearchPage(MODID + ":tinkersResearch.1"), new ResearchPage(patternRecipe), new ResearchPage(MODID + ":tinkersResearch.2")).registerResearchItem();
 	}
 
 	public static void addPattern(){
 		for(MaterialSet material : PatternBuilder.instance.materialSets.values()){
 			TConstructRegistry.addPartMapping(capsPattern, 0, material.materialID, new ItemStack(inertCap));
-			ThaumcraftApi.addCrucibleRecipe("RESEARCH", new ItemStack(cap, 1, material.materialID), new ItemStack(inertCap, 1, material.materialID), new AspectList().add(Aspect.AIR, 8));
 		}
+		
 	}
 
 	public static TextureAtlasSprite createNew(String iconName){
@@ -166,8 +171,6 @@ public class TinkersMagician
 		return null;
 	}
 
-	public static TextureMap map = new TextureMap(2, "");
-
 	@SubscribeEvent
 	public void toolBuild(ToolBuildEvent event){
 		if(event.headStack != null && wandRecipe.validHead(event.headStack.getItem()))
@@ -176,7 +179,9 @@ public class TinkersMagician
 					if(event.headStack.getItem() instanceof IToolPart);
 					else
 						event.headStack = new ItemStack(inertCap, 1, getCapMaterial(event.headStack));
-					
+					if(event.handleStack.getItem() instanceof IToolPart);
+					else
+						event.handleStack = new ItemStack(TinkerTools.toolRod, 1, getRodMaterial(event.handleStack));
 					if(event.accessoryStack.getItem() instanceof IToolPart);
 					else
 						event.accessoryStack = new ItemStack(inertCap, 1, getCapMaterial(event.accessoryStack));
@@ -186,12 +191,12 @@ public class TinkersMagician
 	public static ToolMaterial constructCapMaterial(ItemStack cap){
 		for (WandCap wc : WandCap.caps.values()) {
 			if (checkItemEquals(cap, wc.getItem())){
-				return new ToolMaterial((wc.getTag().charAt(0) + "").toUpperCase() + wc.getTag().substring(1).toLowerCase(), (wc.getTag().charAt(0) + "").toUpperCase() + wc.getTag().substring(1).toLowerCase(), (int) ((wc.getBaseCostModifier() - 1.0f) * 10), 0, 0, 0, 1.0f, 0, 0.0f, "§a", getColorFromLocation(true,wc.getItem(), wc.getTexture()));
+				return new ToolMaterial((wc.getTag().charAt(0) + "").toUpperCase() + wc.getTag().substring(1).toLowerCase(), (wc.getTag().charAt(0) + "").toUpperCase() + wc.getTag().substring(1).toLowerCase(), (int) ((1.2 - wc.getBaseCostModifier()) * 10), 0, (int) ((1.2 - wc.getBaseCostModifier()) * 20), 0, 1.0f, 0, 0.0f, "§a", getColorFromLocation(true,wc.getItem(), wc.getTexture()));
 			}
 		}
 		return null;
 	}
-	
+
 	public static int getCapMaterial(ItemStack cap){
 		for (WandCap wc : WandCap.caps.values()) {
 			if (checkItemEquals(cap, wc.getItem())){
@@ -200,6 +205,19 @@ public class TinkersMagician
 					TConstructRegistry.addtoolMaterial(materialCapIDs.get(wc.getTag()), new ToolMaterial((wc.getTag().charAt(0) + "").toUpperCase() + wc.getTag().substring(1).toLowerCase(), (wc.getTag().charAt(0) + "").toUpperCase() + wc.getTag().substring(1).toLowerCase(), (int) ((wc.getBaseCostModifier() - 1.0f) * 10), 0, 0, 0, 1.0f, 0, 0.0f, "§a", getColorFromLocation(true,wc.getItem(), wc.getTexture())));
 				}
 				return materialCapIDs.get(wc.getTag());
+			}
+		}
+		return -1;
+	}
+
+	public static int getRodMaterial(ItemStack rod){
+		for (WandRod wc : WandRod.rods.values()) {
+			if (checkItemEquals(rod, wc.getItem())){
+				if(materialRodIDs.get(wc.getTag()) == null){
+					materialRodIDs.put(wc.getTag(), ROD_MATERIAL + materialCapIDs.size());
+					TConstructRegistry.addtoolMaterial(materialRodIDs.get(wc.getTag()), new ToolMaterial((wc.getTag().charAt(0) + "").toUpperCase() + wc.getTag().substring(1).toLowerCase(), (wc.getTag().charAt(0) + "").toUpperCase() + wc.getTag().substring(1).toLowerCase(), 0, wc.getCapacity() * 100 / 8, 0, 0, 1.0f, 0, 0.0f, "§a", getColorFromLocation(false, wc.getItem(), wc.getTexture())));
+				}
+				return materialRodIDs.get(wc.getTag());
 			}
 		}
 		return -1;
@@ -217,6 +235,10 @@ public class TinkersMagician
 			in.close();
 			if(cap){
 				Color color = new Color(img.getRGB(img.getWidth() / 8, img.getHeight() / 8));
+				return color.getRGB();
+			}
+			else{
+				Color color = new Color(img.getRGB(img.getWidth() / 8, img.getHeight() / 2));
 				return color.getRGB();
 			}
 		}

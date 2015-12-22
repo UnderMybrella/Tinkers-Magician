@@ -1,13 +1,18 @@
 package org.abimon.mods.minecraft.tinkersMagician;
 
+import java.util.List;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
+import tconstruct.library.TConstructRegistry;
 import tconstruct.library.tools.ToolCore;
 import tconstruct.tools.TinkerTools;
+import thaumcraft.api.aspects.Aspect;
 
 public class ItemWandTemplate extends ToolCore {
 
@@ -28,12 +33,12 @@ public class ItemWandTemplate extends ToolCore {
 			return "";
 		}
 	}
-	
-    @Override
-    public String getModifyType ()
-    {
-        return "Wand";
-    }
+
+	@Override
+	public String getModifyType ()
+	{
+		return "Wand";
+	}
 
 	@Override
 	public String getEffectSuffix() {
@@ -65,16 +70,29 @@ public class ItemWandTemplate extends ToolCore {
 	public String[] getTraits() {
 		return new String[]{"wand"};
 	}
-	
-    public int durabilityTypeHandle ()
-    {
-        return 2;
-    }
-    
-    public float getDurabilityModifier ()
-    {
-        return 1f;
-    }
+
+	public int durabilityTypeHandle ()
+	{
+		return 2;
+	}
+
+	public float getDurabilityModifier ()
+	{
+		return 1f;
+	}
+
+
+	public void addInformation (ItemStack stack, EntityPlayer player, List list, boolean par4){
+		super.addInformation(stack, player, list, par4);
+		if(stack.getItem() == this){
+			list.add("Drain Rate Per Tick");
+			String rates = "";
+			for(Aspect aspect : Aspect.getPrimalAspects())
+				rates += "§" + aspect.getChatcolor() + (ItemWand.getDrainRate(stack, aspect) + 1) + EnumChatFormatting.WHITE + " | ";
+			list.add(rates.substring(0, rates.length() - 2));
+			list.add(EnumChatFormatting.GOLD + "Capacity: " + TConstructRegistry.getMaterial(ItemWand.getTag(stack).getInteger("Handle")).durability * 8 / 100);
+		}
+	}
 
 	public ItemStack onItemRightClick(ItemStack item, World p_77659_2_, EntityPlayer p_77659_3_)
 	{

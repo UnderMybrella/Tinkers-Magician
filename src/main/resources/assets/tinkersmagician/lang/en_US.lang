@@ -2,3 +2,8 @@ toolpart.ToolCaps=%%material Wand Cap
 tool.wand=Wand
 
 item.tinkersmagician:pattern.name
+tc.research_category.tinkersmagician:tinkersCategory=Tinkers' Magician
+tc.research_name.tinkersmagician:tinkersResearch=Magic Tinkering
+tc.research_text.tinkersmagician:tinkersResearch=The unholy unison of Magic and Tinkers'
+tinkersmagician:tinkersResearch.1=As unholy and evil as this unison is, there are some basics required to complete it. Firstly, to get the pattern required for the wand caps, dunk a blank pattern in a crucible with some magic. Then, this can be used in the part builder to make wand caps.
+tinkersmagician:tinkersResearch.2=Secondly, to actually make the wand, you'll need a tool station or a tool forge. Then, you need to put the two wand caps in the head and accessory slots (pickaxe head and accessory slot) and then a tool rod in the handle slot. Also, existing wand caps from Thaumcraft and wand cores can be used as well.

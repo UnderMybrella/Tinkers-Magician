@@ -6,6 +6,7 @@ import tconstruct.library.crafting.ToolRecipe;
 import tconstruct.library.tools.ToolCore;
 import tconstruct.tools.TinkerTools;
 import thaumcraft.api.wands.WandCap;
+import thaumcraft.api.wands.WandRod;
 import thaumcraft.common.items.wands.ItemWandCap;
 
 public class WandRecipe extends ToolRecipe {
@@ -38,6 +39,10 @@ public class WandRecipe extends ToolRecipe {
 			return true;
 		if(input.getUnlocalizedName().toLowerCase().contains("toolrod"))
 			return true;
+		for (WandRod wc : WandRod.rods.values())
+			if(input != null)
+				if(wc.getItem().getItem().getUnlocalizedName().equals(input.getUnlocalizedName()))
+					return true;
 		return false;
 	}
 

@@ -64,7 +64,7 @@ public class ItemWand extends ItemWandCasting implements IModifyable {
 	}
 
 	public void addInformation (ItemStack stack, EntityPlayer player, List list, boolean par4){
-		base.addInformation(stack, player, list, par4);
+		((ToolCore) base).addInformation(stack, player, list, par4);
 		list.add("Drain Rate Per Tick");
 		String rates = "";
 		for(Aspect aspect : Aspect.getPrimalAspects())
@@ -74,8 +74,8 @@ public class ItemWand extends ItemWandCasting implements IModifyable {
 	}
 
 	public int getMaxVis(ItemStack item){
-		if(getTag(item).hasKey("TotalDurability"))
-			return TConstructRegistry.getMaterial(getTag(item).getInteger("Handle")).durability * 25;
+		if(getTag(item).hasKey("Handle"))
+			return TConstructRegistry.getMaterial(getTag(item).getInteger("Handle")).durability * 8;
 		return 25000;
 	}
 
@@ -160,7 +160,7 @@ public class ItemWand extends ItemWandCasting implements IModifyable {
 				INode node = (INode) te;
 				for(Aspect aspect : Aspect.getPrimalAspects()){
 					
-					int a = getDrainRate(stack, aspect);
+					int a = Math.max(getDrainRate(stack, aspect), 1);
 
 					if(node.getAspects().getAmount(aspect) > a){
 						int remaining =  this.addVis(stack, aspect, a - 1, true);
